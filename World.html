@@ -8,7 +8,6 @@
         canvas { width: 100%; height: 100% }
     </style>
 </head>
-
 <body onload="loader()">
 <script src="js/three.js"></script>
 <script src="js/TrackballControls.js"></script>
@@ -20,11 +19,8 @@
     var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
     var aspectRatio = WIDTH / HEIGHT;
     var scene, camera;
-    var roomUpperSidesMesh;
-    var roomLowerSidesMesh;
+    var roomUpperSidesMesh, roomLowerSidesMesh;
     var renderer;
-    var controls;
-
 
     function loader() {
         var OBJFile = 'assets/models/scene.obj';
@@ -40,9 +36,7 @@
 
                         object.traverse(function (child) {
                             if (child instanceof THREE.Mesh) {
-                                //child.rotation.z = -0.2;
                                 child.scale.set(5, 5, 5);
-                                //child.position.set(-20,-44.7,-30);
                                 child.rotation.y += 1;
                             }
                         });
@@ -85,12 +79,10 @@
         roomLowerSidesMesh = new THREE.Mesh( roomLowerSidesGeometry, roomLowerSides );
         scene.add( roomLowerSidesMesh );
 
-
         var roomUpperSidesGeometry = new THREE.BoxBufferGeometry( 100, 100, 100,10,10,10);
         var roomUpperSides = [ materialTransparent, materialFloor, materialFloor,materialTransparent ,materialFloor,materialTransparent];
         roomUpperSidesMesh = new THREE.Mesh( roomUpperSidesGeometry, roomUpperSides );
         scene.add( roomUpperSidesMesh );
-
 
         var edgesGeometry = new THREE.EdgesGeometry( roomLowerSidesGeometry ); // or WireframeGeometry( geometry )
         var lineBasicMaterial = new THREE.LineBasicMaterial( { color: 0x0020A0, linewidth: 500 } );
@@ -109,7 +101,6 @@
         pLH1 = new THREE.PointLightHelper( lightPointLight, 0.5 );
 
         scene.add( pLH1 );
-
 
         render();
     }
@@ -137,15 +128,8 @@
     }
 
     var render = function () {
-        // Újabb képkocka rajzolásának kérése.
-        // Maximálisan 60 FPS-t biztosít a rendszer.
         requestAnimationFrame( render );
-
-        // Interaktív kameramozgatás kezelése
         controls.update();
-
-        // 3D -> 2D vetített kép kiszámítása.
-        // scene 3D színtér képe a camera kamera szemszögéből.
         renderer.render(scene, camera);
     };
 
