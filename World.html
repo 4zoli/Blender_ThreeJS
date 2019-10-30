@@ -13,14 +13,51 @@
 <script src="js/TrackballControls.js"></script>
 <script src="js/MTLLoader.js"></script>
 <script src="js/OBJLoader.js"></script>
+<script src="js/stats.min.js"></script>
+<script src="js/dat.gui.min.js"></script>
 
-<script>
+<script type="text/javascript">
+    "use strict";
     // Globális változók
     var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
     var aspectRatio = WIDTH / HEIGHT;
     var scene, camera;
     var roomUpperSidesMesh, roomLowerSidesMesh;
     var renderer;
+    var ctrl, stats, controls;
+    var material;
+    var group_r2d2;
+    var r2d2_head_mesh, holder;
+    var meshLoaded;
+
+    function addStatsObject() {
+        stats = new Stats();
+        stats.setMode(0);
+
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.left = '0px';
+        stats.domElement.style.top = '0px';
+        document.body.appendChild( stats.domElement );
+    }
+
+    var meshController = function () {
+        this.rotationBarrel = 0.0;
+        this.rotationUpper = 0.0;
+        this.positionTank = 0.0;
+    };
+
+    function addControlGui( controlObject ) {
+        var gui = new dat.GUI( { autoPlace: false } );
+        gui.add( controlObject, 'rotationBarrel', -60, 15 ).name( 'Ágyúcső szöge' );
+        gui.add( controlObject, 'rotationUpper', -180.0, 180.0 ).name( 'Forgás szöge' );
+        gui.add( controlObject, 'positionTank', -400.0, 400.0).name( 'Tank pozíció' );
+
+        gui.domElement.style.position = 'absolute';
+        gui.domElement.style.top = '0px';
+        gui.domElement.style.right = '0px';
+        document.body.appendChild( gui.domElement );
+    }
+
 
     function loader() {
         var OBJFile = 'assets/models/scene.obj';
@@ -94,13 +131,48 @@
         var lightAmbient = new THREE.AmbientLight( 0x202020,1 );
         scene.add( lightAmbient );
 
-        lightPointLight = new THREE.PointLight( 0xccffcc, 1  );
+        var lightPointLight = new THREE.PointLight( 0xccffcc, 1  );
         lightPointLight.position.set( 0, 10, 0 );
         scene.add( lightPointLight );
 
-        pLH1 = new THREE.PointLightHelper( lightPointLight, 0.5 );
+        var pLH1 = new THREE.PointLightHelper( lightPointLight, 0.5 );
 
         scene.add( pLH1 );
+
+
+        group_r2d2 = new THREE.Group();
+        material = new THREE.MeshPhongMaterial( { color: 0x333388, wireframe: false } );
+
+        var r2d2_body_geometry = new THREE.CylinderGeometry( 1, 1, 2 );
+        var r2d2_body_mesh = new THREE.Mesh( r2d2_body_geometry, material );
+        group_r2d2.add( r2d2_body_mesh );
+
+        var r2d2_head_geometry = new THREE.SphereGeometry( 1, 20, 20 );
+        r2d2_head_mesh = new THREE.Mesh( r2d2_head_geometry, material );
+        r2d2_head_mesh.position.y = 1;
+        group_r2d2.add( r2d2_head_mesh );
+
+
+        holder = new THREE.Object3D();
+        var r2d2_eye_geometry = new THREE.CylinderGeometry( 0.2, 0.2, 0.4 );
+        var r2d2_eye_mesh = new THREE.Mesh( r2d2_eye_geometry, material );
+        r2d2_eye_mesh.position.z = 1;
+        r2d2_eye_mesh.rotation.x += 1.5;
+        holder.position.set( 0.0, 0.0, 0.0 );
+        holder.add( r2d2_eye_mesh );
+        r2d2_head_mesh.add( holder );
+
+        group_r2d2.scale.set( 1, 1, 1 );
+        group_r2d2.position.y = 0;
+        scene.add( group_r2d2 );
+
+        ctrl = new meshController();
+        addControlGui( ctrl );
+        addStatsObject();
+
+        controls = new THREE.TrackballControls( camera, renderer.domElement );
+        controls.rotateSpeed = 5.0;
+        controls.panSpeed = 1.0;
 
         render();
     }
@@ -127,10 +199,40 @@
         about.visible = false;
     }
 
+
+    function handleWindowResize() {
+        // Az ablak átméretezése esetén a kamera vetítési paraméterek újraszámolása
+        HEIGHT = window.innerHeight;
+        WIDTH = window.innerWidth;
+        console.log( 'WIDTH=' + WIDTH + '; HEIGHT=' + HEIGHT );
+        renderer.setSize( WIDTH, HEIGHT );
+        aspectRatio = WIDTH / HEIGHT;
+        camera.aspect = aspectRatio;
+        camera.updateProjectionMatrix();
+    }
+
+    function handleWindowResizeOrtho() {
+        // Az ablak átméretezése esetén a kamera vetítési paraméterek újraszámolása
+        HEIGHT = window.innerHeight;
+        WIDTH = window.innerWidth;
+        renderer.setSize( WIDTH, HEIGHT );
+
+        camera.left = WIDTH / -2;
+        camera.right = WIDTH / 2;
+        camera.top = HEIGHT / 2;
+        camera.bottom = HEIGHT / -2;
+        camera.updateProjectionMatrix();
+    }
+
     var render = function () {
-        requestAnimationFrame( render );
+        group_r2d2.position.z = ctrl.positionTank;
+        r2d2_head_mesh.rotation.y = ctrl.rotationUpper * Math.PI / 180.0;
+        holder.rotation.x = ctrl.rotationBarrel * Math.PI / 180.0;
+
         controls.update();
         renderer.render(scene, camera);
+        stats.update();
+        requestAnimationFrame( render );
     };
 
 </script>
