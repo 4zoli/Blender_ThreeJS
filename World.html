@@ -22,9 +22,9 @@
     let WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
     let aspectRatio = WIDTH / HEIGHT;
     let scene, camera, roomUpperSidesMesh, roomLowerSidesMesh, renderer, gui, panel, ctrl, stats, controls;
-    let group_r2d2, r2d2_head_mesh, holder;
-    let meshXWingLoaded , blenderMeshLoaded;
-    let lightsaberLight, spotLight, spotLight1;
+    let group_r2d2, r2d2_head_mesh, holder, sun;
+    let meshXWingLoaded , blenderMeshLoaded, sunMesh, moonMesh;
+    let lightsaberLight,sunLight, spotLight;
     let temp;
 
     function xWingLoader() {
@@ -94,8 +94,10 @@
         camera.position.y = 55;
         camera.lookAt( scene.position );
 
+        /*
         var axesHelper = new THREE.AxesHelper( 10 );
         scene.add( axesHelper );
+        */
 
         // Kameramozgatás
         controls = new THREE.TrackballControls( camera, renderer.domElement );
@@ -105,18 +107,29 @@
         window.addEventListener( 'resize', handleWindowResize, false );
         window.addEventListener( 'dblclick', showRoomSides, false );
         window.addEventListener( 'keypress', toggleGui );
-        //window.addEventListener( 'keyup', toggleGu );
+        window.addEventListener( 'keypress', toggleLight );
 
         //Színtér összerakása
         var materialFloor = new THREE.MeshPhongMaterial( { color: 0x999999, side: THREE.DoubleSide } );
         var materialWalls = new THREE.MeshLambertMaterial( { color: 0x2c3227, side: THREE.DoubleSide } );
         var materialTransparent =  new THREE.MeshLambertMaterial( { transparent: true, opacity: 0, wireframe: true, side: THREE.DoubleSide} );
 
+
+        var textureLoader = new THREE.TextureLoader();
+        var texture = textureLoader.load( 'assets/texture/floor.png' );
+        materialFloor.map = texture;
+
         var roomLowerSidesGeometry = new THREE.BoxBufferGeometry( 80, 40, 80);
         var roomLowerSides = [ materialWalls, materialTransparent, materialTransparent,materialFloor,materialTransparent,materialWalls];
         roomLowerSidesMesh = new THREE.Mesh( roomLowerSidesGeometry, roomLowerSides );
         roomLowerSidesMesh.position.y = 20;
         scene.add( roomLowerSidesMesh );
+        materialFloor = new THREE.MeshPhongMaterial( { color: 0x999999, side: THREE.DoubleSide } );
+
+
+        var textureLoader = new THREE.TextureLoader();
+        var texture = textureLoader.load( 'assets/texture/wall.png' );
+        materialWalls.map = texture;
 
         var roomUpperSidesGeometry = new THREE.BoxBufferGeometry( 80, 40, 80,10,10,10);
         var roomUpperSides = [ materialTransparent, materialFloor, materialFloor,materialTransparent ,materialFloor,materialTransparent];
@@ -139,8 +152,25 @@
         lightsaberLight.position.set( -8.6, 6, -21.4 );
         scene.add( lightsaberLight );
 
+        /*
         var pLH1 = new THREE.PointLightHelper( lightsaberLight, 0.5 );
         scene.add( pLH1 );
+        */
+
+        var sunGeometry = new THREE.SphereGeometry( 30, 30, 30 );
+        var sunMaterial = new THREE.MeshLambertMaterial({color: 0XFDB813 });
+        sunMesh = new THREE.Mesh( sunGeometry, sunMaterial );
+        sunMesh.visible = false;
+        sunMesh.position.set(-25,80,-25);
+        sunMesh.castShadow = true;
+        sunMesh.receiveShadow = true;
+        scene.add( sunMesh );
+
+        sunLight = new THREE.PointLight( 0x228b22, 100,100 );
+        sunLight.castShadow = true;
+        sunLight.position.set(-25,80,-25);
+        sunLight.visible = false;
+        scene.add( sunLight );
 
         //Blender textúrák betöltése
         scene.add( meshXWingLoaded );
@@ -149,10 +179,10 @@
         //Animált THREEJS Objektum összerakása
         group_r2d2 = new THREE.Group();
 
-        var r2d2_body_material = new THREE.MeshPhongMaterial( { color: 0xffffff, wireframe: false } );
-        var r2d2_head_material = new THREE.MeshPhongMaterial( { color: 0x808080 , wireframe: false } );
-        var r2d2_eye_material = new THREE.MeshPhongMaterial( { color: 0x2231a4, wireframe: false } );
-        var r2d2_leg_material = new THREE.MeshPhongMaterial( { color: 0x2231a4, wireframe: false } );
+        var r2d2_body_material = new THREE.MeshPhongMaterial({color: 0xffffff});
+        var r2d2_head_material = new THREE.MeshPhongMaterial( {color: 0x808080} );
+        var r2d2_eye_material = new THREE.MeshPhongMaterial( {color: 0x2231a4} );
+        var r2d2_leg_material = new THREE.MeshPhongMaterial( {color: 0x2231a4} );
 
         var r2d2_body_geometry = new THREE.CylinderGeometry( 1, 1, 2,100 );
         var r2d2_body_mesh = new THREE.Mesh( r2d2_body_geometry, r2d2_body_material );
@@ -212,7 +242,8 @@
         spotLight = new THREE.SpotLight( 0x228b22, 0.6 );
         spotLight.position.set( -8.6, 6, -21.4  );
         spotLight.angle = 0.2;
-        spotLight.power = 5;
+        spotLight.power = 10;
+        spotLight.intensity = 15;
         spotLight.penumbra = 1;
         spotLight.castShadow = true;
         scene.add( spotLight.target, spotLight );
@@ -221,26 +252,37 @@
         spotLight.shadow.mapSize.height = 512; // default
         spotLight.shadow.camera.near = 0.5;       // default
         spotLight.shadow.camera.far = 500      // default
-
+        /*
         var spotLightHelper = new THREE.SpotLightHelper(spotLight);
         scene.add(spotLightHelper);
+        */
+
+
+        var textureLoader = new THREE.TextureLoader();
+        var texture = textureLoader.load( 'assets/texture/moon.png' );
+
+        var moonGeometry = new THREE.SphereGeometry( 15, 30, 30 );
+        var moonMaterial = new THREE.MeshPhongMaterial();
+        moonMaterial.map = texture;
+        moonMesh = new THREE.Mesh( moonGeometry, moonMaterial );
+        moonMesh.position.set(10,60,25);
+        scene.add( moonMesh );
 
 
         for(let i=1;i<5;i++) {
             var j;
-            if (i%2 == 0)   {
-                j = 1;
-            }
-            else j = 2;
+            i%2 == 0 ? j=1 : j=2;
             var lightForXWing = new THREE.PointLight(0x0000ff, 0.6);
-            lightForXWing.position.set(-60+i*23, 40, -60 + j *40);
+            lightForXWing.position.set(-60+i*23, 40, -60+j*40);
             lightForXWing.angle = 0.2;
             lightForXWing.power = 6;
             lightForXWing.penumbra = 1;
             lightForXWing.castShadow = true;
             scene.add(lightForXWing);
+            /*
             var spotLightHelper1 = new THREE.PointLightHelper(lightForXWing);
             scene.add(spotLightHelper1);
+            */
         }
 
         ctrl = new meshController();
@@ -279,6 +321,9 @@
         gui = new dat.GUI( { autoPlace: false } );
         gui.add( controlObject, 'headRotation', -180.0, 180.0 ).name( 'Fej forgatás' );
         gui.add( controlObject, 'moveRtwo', -10.0, 10.0).name( 'R2D2 Mozgatás' );
+        gui.addFolder('Panel elrejtése: i');
+        gui.addFolder('Napszak váltás: o');
+        gui.addFolder('Színtér nyitása: Dupla kattintás');
 
         gui.domElement.style.position = 'absolute';
         gui.domElement.style.top = '0px';
@@ -288,13 +333,10 @@
     }
 
     function toggleLight()    {
-        if( event.keyCode == 'l'.charCodeAt( 0 ) ) {
-            alert('Hello');
-            if (this.lightPoint.power > 0) {
-                this.lightPoint.power = 100;
-                return;
-            }
-            this.lightPoint.power = 0;
+        if( event.keyCode == 'o'.charCodeAt( 0 ) ) {
+            sunMesh.visible == true ? sunMesh.visible = false : sunMesh.visible = true;
+            sunLight.visible == true ? sunLight.visible = false : sunLight.visible = true;
+            moonMesh.visible == true ? moonMesh.visible = false : moonMesh.visible = true;
         }
     }
 
