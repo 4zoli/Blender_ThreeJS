@@ -1,0 +1,30 @@
+A projekt a lego figurával kezdõdött. 
+
+A nyakával kezdtem, ami egy cylinder majd extrudáltam belõle a fejét.
+A törzsét boxból csináltam, felül keskenyítettem és laposítottam is.
+A dereka szintén dobozból lett.
+A lágyéka cylinder, keskenyítve.
+A derekához egy boolean-t adtam, hogy kivágja a cylinder helyét amihez a cylindert átmenetileg szélesíteni kellett.
+A lábai cylinderbõl készültek, itt maga a lábszár extrudálva lett a combjából. 
+A karja cylinderbõl lett sokszorosan extrudála.
+A keze szintén cylinder, az alsó felsõ lapokat és pár szeletet kivágtam, majd a maradékot vastagítottam.
+
+Az X-Wing-hez elkészítettem a lego elemeket.
+Egy legos manualt néztem végig, és amik elemek elõkerültek azokat lemodelleztem.
+Az 1x1-es alap elemmel kezdtem, amit a lego figura talpához mértem.
+Ebbõl másolgattam a nagyobb és változatosabb elemeket is.
+
+Amikor minden elem elkészült, a manual alapján összerakosgattam az X-Winget. Itt már csak legozás volt a meglévõ elemekbõl.
+
+Az R2D2 egyszerû lett. A teste és a három lába kockából van, THREE.JS-ben megvalósítva.
+A feje egy labda, amit beleengedtem a testébe így megkaptam a félgömböt.
+A szeme is egy cylinder lett.
+
+C3PO a legvégén készült, õ szimplán Luke klónja, másféle szinezéssel. 
+
+A hold és a nap két Sphere. A hold kapott textúrát, és kékkel világít míg a nap sárgával.
+Luke fénykardja is világít, zölddel. Itt van egy sima pointLight is és egy spotLight is ami R2-ra mutat.
+
+Textúráztam még a padlót és a falakat is, egy mocsaras erdõs összehatást szerettem volna.
+
+Az a jelenet készült el nagyjából, mikor Luke kiemelte az X-Winget a mocsárból :) (igen C3PO nem volt ott)
