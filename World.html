@@ -24,7 +24,7 @@
     let scene, camera, roomUpperSidesMesh, roomLowerSidesMesh, renderer, gui, panel, ctrl, stats, controls;
     let group_r2d2, r2d2_head_mesh, holder, sun;
     let meshXWingLoaded , blenderMeshLoaded, sunMesh, moonMesh;
-    let lightsaberLight,sunLight, spotLight;
+    let lightsaberLight,sunLight, spotLight, moonLight;
     let temp;
 
     function xWingLoader() {
@@ -44,7 +44,6 @@
                                 if (child instanceof THREE.Mesh) {
                                     child.castShadow = true;
                                     child.receiveShadow = true;
-                                    child.material.color.setHex(0x07b7c);
                                 }
                                 child.scale.set(6, 6, 6);
                                 child.position.setY(10);
@@ -269,21 +268,20 @@
         scene.add( moonMesh );
 
 
-        for(let i=1;i<5;i++) {
-            var j;
-            i%2 == 0 ? j=1 : j=2;
-            var lightForXWing = new THREE.PointLight(0x0000ff, 0.6);
-            lightForXWing.position.set(-60+i*23, 40, -60+j*40);
-            lightForXWing.angle = 0.2;
-            lightForXWing.power = 6;
-            lightForXWing.penumbra = 1;
-            lightForXWing.castShadow = true;
-            scene.add(lightForXWing);
+
+            moonLight = new THREE.PointLight(0x0000ff, 0.6);
+            moonLight.position.set(5, 45, 25);
+            moonLight.power = 3;
+            moonLight.intensity = 3;
+            moonLight.penumbra = 0.8;
+            moonLight.castShadow = true;
+            scene.add(moonLight);
             /*
-            var spotLightHelper1 = new THREE.PointLightHelper(lightForXWing);
+            var spotLightHelper1 = new THREE.PointLightHelper(moonLight);
             scene.add(spotLightHelper1);
             */
-        }
+
+
 
         ctrl = new meshController();
         addControlGui( ctrl );
@@ -337,6 +335,7 @@
             sunMesh.visible == true ? sunMesh.visible = false : sunMesh.visible = true;
             sunLight.visible == true ? sunLight.visible = false : sunLight.visible = true;
             moonMesh.visible == true ? moonMesh.visible = false : moonMesh.visible = true;
+            moonLight.visible == true ? moonLight.visible = false : moonLight.visible = true;
         }
     }
 
