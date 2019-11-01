@@ -208,7 +208,7 @@
 
     var meshController = function () {
         this.headRotation = 0.0;
-        this.eyeRotation = 0.0;
+        this.headRotation = 0.0;
         this.moveRtwo = 0.0;
     };
 
@@ -229,8 +229,7 @@
     function addControlGui( controlObject ) {
         stats = new Stats();
         gui = new dat.GUI( { autoPlace: false } );
-        gui.add( controlObject, 'headRotation', -3, 5 ).name( 'Szem nézelődés' );
-        gui.add( controlObject, 'eyeRotation', -180.0, 180.0 ).name( 'Fej forgatás' );
+        gui.add( controlObject, 'headRotation', -180.0, 180.0 ).name( 'Fej forgatás' );
         gui.add( controlObject, 'moveRtwo', -10.0, 10.0).name( 'R2D2 Mozgatás' );
 
         gui.domElement.style.position = 'absolute';
@@ -293,8 +292,7 @@
 
     var render = function () {
         group_r2d2.position.z = ctrl.moveRtwo;
-        r2d2_head_mesh.rotation.y = ctrl.eyeRotation * Math.PI / 180;
-        holder.rotation.x = ctrl.headRotation * Math.PI  / 180;
+        r2d2_head_mesh.rotation.y = ctrl.headRotation * Math.PI / 180;
 
         meshXWingLoaded.rotation.y -= 0.02;
 
