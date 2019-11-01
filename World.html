@@ -19,18 +19,13 @@
 <script type="text/javascript">
     "use strict";
     // Globális változók
-    var WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
-    var aspectRatio = WIDTH / HEIGHT;
-    var scene, camera;
-    var roomUpperSidesMesh, roomLowerSidesMesh;
-    var renderer, gui;
-    var ctrl, stats, controls;
-    var material;
-    var group_r2d2;
-    var r2d2_head_mesh, holder;
-    var meshXWingLoaded , blenderMeshLoaded;
-    var lightPoint;
-    var panel;
+    let WIDTH = window.innerWidth, HEIGHT = window.innerHeight;
+    let aspectRatio = WIDTH / HEIGHT;
+    let scene, camera, roomUpperSidesMesh, roomLowerSidesMesh, renderer, gui, panel, ctrl, stats, controls;
+    let group_r2d2, r2d2_head_mesh, holder;
+    let meshXWingLoaded , blenderMeshLoaded;
+    let lightsaberLight, spotLight, spotLight1;
+    let temp;
 
     function xWingLoader() {
         var OBJFile = 'assets/models/xwing.obj';
@@ -46,8 +41,13 @@
 
                         object.traverse(function (child) {
                             if (child instanceof THREE.Mesh) {
+                                if (child instanceof THREE.Mesh) {
+                                    child.castShadow = true;
+                                    child.receiveShadow = true;
+                                    child.material.color.setHex(0x07b7c);
+                                }
                                 child.scale.set(6, 6, 6);
-                                child.position.setY(16);
+                                child.position.setY(10);
                             }
                         });
                         blenderMeshLoader();
@@ -71,7 +71,6 @@
                             if (child instanceof THREE.Mesh) {
                                 child.scale.set(5, 5, 5);
                                 child.position.setY(-1.5);
-
                             }
                         });
                         init();
@@ -81,8 +80,10 @@
 
     function init() {
         renderer = new THREE.WebGLRenderer( { antialias: true } );
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap; // default THREE.PCFShadowMap
         renderer.setSize( WIDTH, HEIGHT );
-        renderer.setClearColor( 0x1b1e23, 1 );
+        renderer.setClearColor( 0x1000ff, 1 );
         document.body.appendChild( renderer.domElement );
 
         scene = new THREE.Scene();
@@ -107,9 +108,9 @@
         //window.addEventListener( 'keyup', toggleGu );
 
         //Színtér összerakása
-        var materialFloor = new THREE.MeshBasicMaterial( { color: 0x999999, side: THREE.DoubleSide } );
-        var materialWalls = new THREE.MeshBasicMaterial( { color: 0x2c3227, side: THREE.DoubleSide } );
-        var materialTransparent =  new THREE.MeshBasicMaterial( { transparent: true, opacity: 0, wireframe: true, side: THREE.DoubleSide} );
+        var materialFloor = new THREE.MeshPhongMaterial( { color: 0x999999, side: THREE.DoubleSide } );
+        var materialWalls = new THREE.MeshLambertMaterial( { color: 0x2c3227, side: THREE.DoubleSide } );
+        var materialTransparent =  new THREE.MeshLambertMaterial( { transparent: true, opacity: 0, wireframe: true, side: THREE.DoubleSide} );
 
         var roomLowerSidesGeometry = new THREE.BoxBufferGeometry( 80, 40, 80);
         var roomLowerSides = [ materialWalls, materialTransparent, materialTransparent,materialFloor,materialTransparent,materialWalls];
@@ -130,14 +131,15 @@
         scene.add( boxEdges );
 
         //Fények beállítása
-        var lightAmbient = new THREE.AmbientLight( 0xffffff,0.3);
+        var lightAmbient = new THREE.AmbientLight( 0xffffff,0.6);
         scene.add( lightAmbient );
 
-        lightPoint = new THREE.PointLight( 0x228b22, 15,50 );
-        lightPoint.position.set( -10, 30, -20 );
-        scene.add( lightPoint );
+        lightsaberLight = new THREE.PointLight( 0x228b22, 10,8 );
+        lightsaberLight.castShadow = true;
+        lightsaberLight.position.set( -8.6, 6, -21.4 );
+        scene.add( lightsaberLight );
 
-        var pLH1 = new THREE.PointLightHelper( lightPoint, 0.5 );
+        var pLH1 = new THREE.PointLightHelper( lightsaberLight, 0.5 );
         scene.add( pLH1 );
 
         //Blender textúrák betöltése
@@ -154,29 +156,40 @@
 
         var r2d2_body_geometry = new THREE.CylinderGeometry( 1, 1, 2,100 );
         var r2d2_body_mesh = new THREE.Mesh( r2d2_body_geometry, r2d2_body_material );
+        r2d2_body_mesh.castShadow = true; //default is false
+        r2d2_body_mesh.receiveShadow = false; //default
         group_r2d2.add( r2d2_body_mesh );
+
 
         var r2d2_legLeft_geometry = new THREE.BoxGeometry(0.5,2.5,0.8);
         var r2d2_legLeft_mesh = new THREE.Mesh( r2d2_legLeft_geometry, r2d2_leg_material);
         r2d2_legLeft_mesh.position.x += 1.2;
         r2d2_legLeft_mesh.position.y -= 0.5;
+        r2d2_legLeft_mesh.castShadow = true; //default is false
+        r2d2_legLeft_mesh.receiveShadow = false; //default
         group_r2d2.add( r2d2_legLeft_mesh );
 
         var r2d2_legRight_geometry = new THREE.BoxGeometry(0.5,2.5,0.8);
         var r2d2_legRight_mesh = new THREE.Mesh( r2d2_legRight_geometry, r2d2_leg_material);
         r2d2_legRight_mesh.position.x -= 1.2;
         r2d2_legRight_mesh.position.y -= 0.5;
+        r2d2_legRight_mesh.castShadow = true; //default is false
+        r2d2_legRight_mesh.receiveShadow = false; //default
         group_r2d2.add( r2d2_legRight_mesh );
 
         var r2d2_legFront_geometry = new THREE.BoxGeometry(0.5,0.8,0.5);
         var r2d2_legFront_mesh = new THREE.Mesh( r2d2_legFront_geometry, r2d2_leg_material);
         r2d2_legFront_mesh.position.z += 0.7;
         r2d2_legFront_mesh.position.y -= 1.4;
+        r2d2_legFront_mesh.castShadow = true; //default is false
+        r2d2_legFront_mesh.receiveShadow = false; //default
         group_r2d2.add( r2d2_legFront_mesh );
 
         var r2d2_head_geometry = new THREE.SphereGeometry( 0.95, 20, 20 );
         r2d2_head_mesh = new THREE.Mesh( r2d2_head_geometry, r2d2_head_material );
         r2d2_head_mesh.position.y = 1;
+        r2d2_head_mesh.castShadow = true; //default is false
+        r2d2_head_mesh.receiveShadow = false; //default
         group_r2d2.add( r2d2_head_mesh );
 
         holder = new THREE.Object3D();
@@ -186,6 +199,8 @@
         r2d2_eye_mesh.position.z = 0.8;
         r2d2_eye_mesh.position.y = 0.3;
         r2d2_eye_mesh.rotation.x += 1.5;
+        r2d2_eye_mesh.castShadow = true; //default is false
+        r2d2_eye_mesh.receiveShadow = false; //default
         holder.add( r2d2_eye_mesh );
         r2d2_head_mesh.add( holder );
 
@@ -193,6 +208,40 @@
         group_r2d2.position.y = 1.75;
         group_r2d2.position.x = 2;
         scene.add( group_r2d2 );
+
+        spotLight = new THREE.SpotLight( 0x228b22, 0.6 );
+        spotLight.position.set( -8.6, 6, -21.4  );
+        spotLight.angle = 0.2;
+        spotLight.power = 5;
+        spotLight.penumbra = 1;
+        spotLight.castShadow = true;
+        scene.add( spotLight.target, spotLight );
+
+        spotLight.shadow.mapSize.width = 512;  // default
+        spotLight.shadow.mapSize.height = 512; // default
+        spotLight.shadow.camera.near = 0.5;       // default
+        spotLight.shadow.camera.far = 500      // default
+
+        var spotLightHelper = new THREE.SpotLightHelper(spotLight);
+        scene.add(spotLightHelper);
+
+
+        for(let i=1;i<5;i++) {
+            var j;
+            if (i%2 == 0)   {
+                j = 1;
+            }
+            else j = 2;
+            var lightForXWing = new THREE.PointLight(0x0000ff, 0.6);
+            lightForXWing.position.set(-60+i*23, 40, -60 + j *40);
+            lightForXWing.angle = 0.2;
+            lightForXWing.power = 6;
+            lightForXWing.penumbra = 1;
+            lightForXWing.castShadow = true;
+            scene.add(lightForXWing);
+            var spotLightHelper1 = new THREE.PointLightHelper(lightForXWing);
+            scene.add(spotLightHelper1);
+        }
 
         ctrl = new meshController();
         addControlGui( ctrl );
@@ -207,7 +256,6 @@
     }
 
     var meshController = function () {
-        this.headRotation = 0.0;
         this.headRotation = 0.0;
         this.moveRtwo = 0.0;
     };
@@ -295,6 +343,7 @@
         r2d2_head_mesh.rotation.y = ctrl.headRotation * Math.PI / 180;
 
         meshXWingLoaded.rotation.y -= 0.02;
+        spotLight.target.position.z = ctrl.moveRtwo;
 
         controls.update();
         renderer.render(scene, camera);
